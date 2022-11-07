@@ -23,6 +23,10 @@ public class BookingService {
                 bookings -> String.join("\n", bookings)
             )
             .onSubscription().invoke(() -> log.infof("[%s] Start booking...", destination))
-            .onItem().invoke(() -> log.infof("[%s] Booking finished!", destination));
+            .onItem().invoke(() -> log.infof("[%s] Booking finished!", destination))
+            .onFailure().recoverWithItem(e -> {
+                log.warn("Error occured during booking: ", e);
+                return "Error: " + e.getMessage();
+            });
     }
 }
