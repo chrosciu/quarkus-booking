@@ -11,6 +11,7 @@ import lombok.extern.jbosslog.JBossLog;
 public class BookingService {
     private final FlightService flightService;
     private final HotelService hotelService;
+    private final AuditService auditService;
 
     public Uni<String> book(String destination) {
         return Uni.join()
@@ -24,6 +25,7 @@ public class BookingService {
             )
             .onSubscription().invoke(() -> log.infof("[%s] Start booking...", destination))
             .onItem().invoke(() -> log.infof("[%s] Booking finished!", destination))
+            .onItem().call(() -> auditService.auditTravel(destination))
             .onFailure().recoverWithItem(e -> {
                 log.warn("Error occured during booking: ", e);
                 return "Error: " + e.getMessage();
